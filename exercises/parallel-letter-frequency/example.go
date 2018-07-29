@@ -1,6 +1,6 @@
 package letter
 
-func ConcurrentFrequency(l []string) FreqMap {
+func ConcurrentFrequencyExample(l []string) FreqMap {
 	switch len(l) {
 	case 0:
 		return FreqMap{}
