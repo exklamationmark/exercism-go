@@ -21,43 +21,209 @@ package robot
 // and Dir.String.  Complete step 1 before moving on to step 2.
 
 import (
-	"runtime"
+	"fmt"
 	"testing"
 )
 
-func TestStep1(t *testing.T) {
+var oneRobotTestCases = []struct {
+	name string
 
-	want := func(x, y int, dir Dir) {
-		_, _, line, _ := runtime.Caller(1)
-		if Step1Robot.X != x || Step1Robot.Y != y {
-			t.Fatalf("(from line %d) robot at = %d, %d.  Want %d, %d.",
-				line, Step1Robot.X, Step1Robot.Y, x, y)
-		}
-		if Step1Robot.Dir != dir {
-			t.Fatalf("(from line %d) robot facing %v, want %v.",
-				line, Step1Robot.Dir, dir)
-		}
+	initX, initY int
+	initFacing   Direction
+	cmds         string
+
+	finalX, finalY int
+	finalFacing    Direction
+}{
+	{
+		name:        "turn right from facing North",
+		initX:       0,
+		initY:       0,
+		initFacing:  North,
+		cmds:        "R",
+		finalX:      0,
+		finalY:      0,
+		finalFacing: East,
+	},
+	{
+		name:        "turn right from facing East",
+		initX:       0,
+		initY:       0,
+		initFacing:  East,
+		cmds:        "R",
+		finalX:      0,
+		finalY:      0,
+		finalFacing: South,
+	},
+	{
+		name:        "turn right from facing South",
+		initX:       0,
+		initY:       0,
+		initFacing:  South,
+		cmds:        "R",
+		finalX:      0,
+		finalY:      0,
+		finalFacing: West,
+	},
+	{
+		name:        "turn right from facing West",
+		initX:       0,
+		initY:       0,
+		initFacing:  West,
+		cmds:        "R",
+		finalX:      0,
+		finalY:      0,
+		finalFacing: North,
+	},
+	{
+		name:        "turn left from facing North",
+		initX:       0,
+		initY:       0,
+		initFacing:  North,
+		cmds:        "L",
+		finalX:      0,
+		finalY:      0,
+		finalFacing: West,
+	},
+	{
+		name:        "turn left from facing East",
+		initX:       0,
+		initY:       0,
+		initFacing:  East,
+		cmds:        "L",
+		finalX:      0,
+		finalY:      0,
+		finalFacing: North,
+	},
+	{
+		name:        "turn left from facing South",
+		initX:       0,
+		initY:       0,
+		initFacing:  South,
+		cmds:        "L",
+		finalX:      0,
+		finalY:      0,
+		finalFacing: East,
+	},
+	{
+		name:        "turn left from facing West",
+		initX:       0,
+		initY:       0,
+		initFacing:  West,
+		cmds:        "L",
+		finalX:      0,
+		finalY:      0,
+		finalFacing: South,
+	},
+	{
+		name:        "advance from facing North",
+		initX:       0,
+		initY:       0,
+		initFacing:  North,
+		cmds:        "A",
+		finalX:      0,
+		finalY:      1,
+		finalFacing: North,
+	},
+	{
+		name:        "advance from facing East",
+		initX:       0,
+		initY:       0,
+		initFacing:  East,
+		cmds:        "A",
+		finalX:      1,
+		finalY:      0,
+		finalFacing: East,
+	},
+	{
+		name:        "advance from facing South",
+		initX:       0,
+		initY:       0,
+		initFacing:  South,
+		cmds:        "A",
+		finalX:      0,
+		finalY:      -1,
+		finalFacing: South,
+	},
+	{
+		name:        "advance from facing West",
+		initX:       0,
+		initY:       0,
+		initFacing:  West,
+		cmds:        "A",
+		finalX:      -1,
+		finalY:      0,
+		finalFacing: West,
+	},
+	{
+		name:        "multple instructions 1",
+		initX:       0,
+		initY:       0,
+		initFacing:  North,
+		cmds:        "LAAARALA",
+		finalX:      -4,
+		finalY:      1,
+		finalFacing: West,
+	},
+	{
+		name:        "multple instructions 2",
+		initX:       2,
+		initY:       -7,
+		initFacing:  East,
+		cmds:        "RRAAAAALA",
+		finalX:      -3,
+		finalY:      -8,
+		finalFacing: South,
+	},
+	{
+		name:        "multple instructions 3",
+		initX:       8,
+		initY:       4,
+		initFacing:  South,
+		cmds:        "LAAARRRALLLL",
+		finalX:      11,
+		finalY:      5,
+		finalFacing: North,
+	},
+}
+
+func TestOneRobot(t *testing.T) {
+	for _, tc := range oneRobotTestCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := NewRobot(tc.initX, tc.initY, tc.initFacing)
+
+			for _, cmd := range tc.cmds {
+				switch Command(cmd) {
+				default:
+					panic(fmt.Sprintf("unknown command: %v", cmd))
+				case TurnLeft:
+					r.TurnLeft()
+				case TurnRight:
+					r.TurnRight()
+				case Advance:
+					r.Advance()
+				}
+			}
+
+			if r.X != tc.finalX || r.Y != tc.finalY {
+				t.Errorf("different final position; want= {x= %d, y= %d}; got= {x= %d, y= %d}", tc.finalX, tc.finalY, r.X, r.Y)
+			}
+			if r.Facing != tc.finalFacing {
+				t.Errorf("different final facing; want= %v; got= %v", tc.finalFacing, r.Facing)
+			}
+		})
 	}
-	want(0, 0, N)
+}
 
-	Advance()
-	want(0, 1, N)
+func TestNewRobot(t *testing.T) {
+	actual := NewRobot(10, -10, West)
+	expected := Robot{
+		X:      10,
+		Y:      -10,
+		Facing: West,
+	}
 
-	Right()
-	want(0, 1, E)
-
-	Advance()
-	want(1, 1, E)
-
-	Left()
-	want(1, 1, N)
-
-	Left()
-	Left()
-	Advance()
-	want(1, 0, S)
-
-	Right()
-	Advance()
-	want(0, 0, W)
+	if want, got := *actual, expected; want != got {
+		t.Errorf("different result; want= %#v; got= %#v", want, got)
+	}
 }
